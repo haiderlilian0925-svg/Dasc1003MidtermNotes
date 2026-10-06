@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Midterm Study Flashcards</title>
+    <style>
+        body {
+            background-color: #131314;
+            color: #e3e3e3;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #e3e3e3;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .instructions {
+            margin-bottom: 30px;
+            color: #c4c7c5;
+            font-size: 1.1rem;
+        }
+
+        .flashcard-container {
+            width: 700px;
+            height: 400px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s ease-in-out;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            box-sizing: border-box;
+            border-radius: 20px;
+            border: 1px solid #444746;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            text-align: center;
+            font-size: 1.6rem;
+            line-height: 1.5;
+        }
+
+        .card-front {
+            background-color: #1e1f20;
+            color: #e3e3e3;
+        }
+
+        .card-front::before {
+            content: "QUESTION";
+            font-size: 0.9rem;
+            color: #9aa0a6;
+            letter-spacing: 2px;
+            position: absolute;
+            top: 20px;
+        }
+
+        .card-back {
+            background-color: #282a2c;
+            color: #a8c7fa;
+            transform: rotateY(180deg);
+            font-size: 1.4rem;
+        }
+
+        .card-back::before {
+            content: "ANSWER";
+            font-size: 0.9rem;
+            color: #9aa0a6;
+            letter-spacing: 2px;
+            position: absolute;
+            top: 20px;
+        }
+
+        .controls {
+            margin-top: 40px;
+            display: flex; 
+            gap: 20px;
+        }
+
+        button {
+            background-color: #0b57d0;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #0842a0;
+        }
+
+        .progress {
+            margin-top: 15px;
+            color: #c4c7c5;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Course Review Flashcards</h1>
+    <div class="instructions" id="instructions">Click the flashcard to reveal the answer.</div>
+
+    <div class="flashcard-container" id="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+                <span id="front-text"></span>
+            </div>
+            <div class="card-face card-back">
+                <span id="back-text"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls" id="controls">
+        <button id="prev-btn">Backwards</button>
+        <button id="next-btn">Forwards</button>
+    </div>
+    
+    <div class="progress" id="progress-text"></div>
+
+    <script>
+        const flashcardsData = [
+            {
+                "question": "What is the difference between Data and Information?",
+                "answer": "Data consists of raw recorded facts or measurements, whereas information is data that has been organized and given context or meaning."
+            },
+            {
+                "question": "What does an Excel box plot summarize?",
+                "answer": "A box plot summarizes the center and spread of numerical data, displaying the median, quartiles, and potential outliers."
+            },
+            {
+                "question": "How does a histogram differ from a bar chart?",
+                "answer": "A histogram shows the distribution of numerical values with touching bars, while a bar chart compares distinct categorical groups using separated bars."
+            },
+            {
+                "question": "What is the primary purpose of an Excel PivotTable?",
+                "answer": "A PivotTable reorganizes data to help answer questions by grouping, counting, summing, or averaging data without the need to write complex formulas."
+            },
+            {
+                "question": "What does correlation measure and what does it NOT prove?",
+                "answer": "Correlation measures the linear association between two numerical variables, but an association does not establish a cause-and-effect relationship."
+            },
+            {
+                "question": "What is an Excel Slicer?",
+                "answer": "An interactive visual filter with buttons that easily updates a connected PivotTable or PivotChart."
+            },
+            {
+                "question": "Describe the difference between active and passive data collection.",
+                "answer": "Active data collection (e.g., surveys, interviews) requires direct user participation, while passive collection (e.g., web tracking, sensors) occurs automatically in the background."
+            },
+            {
+                "question": "What is Utilitarian Ethics?",
+                "answer": "An ethical framework where the morality of an action is determined by its consequences, aiming for the greatest good for the greatest number of people."
+            },
+            {
+                "question": "What is Informed Consent in data ethics?",
+                "answer": "The ethical principle of letting users know how their data will be used prior to collection, informing them of potential risks, and allowing them to opt out."
+            },
+            {
+                "question": "Define Critical Thinking.",
+                "answer": "The objective analysis and evaluation of an issue in order to form a well-reasoned judgment, which requires actively questioning assumptions and identifying inherent biases."
+            },
+            {
+                "question": "What is the Socratic Principle regarding human thinking?",
+                "answer": "The idea that 'the unexamined life is not worth living', recognizing that unchecked human thinking is naturally biased, partial, and flawed, requiring conscious reflection."
+            },
+            {
+                "question": "What are the three Vs of Data in modern data science?",
+                "answer": "Volume (size and scope of data), Velocity (speed at which data is accumulated), and Variety (the different forms and types of structured and unstructured data)."
+            },
+            {
+                "question": "Why should a data scientist use Exploratory Data Analysis (EDA)?",
+                "answer": "Exploratory Data Analysis helps examine data to discover patterns, relationships, trends, differences, and unusual observations before making large conclusions."
+            },
+            {
+                "question": "What is Data Wrangling?",
+                "answer": "The process of transforming, filtering, and organizing cleansed data into a format that is highly useful for downstream analysis."
+            },
+            {
+                "question": "What is a scatter plot primarily used for?",
+                "answer": "A scatter plot is used to observe and visually display the relationship or correlation between two numerical variables."
+            },
+            {
+                "question": "What does PII stand for in data privacy?",
+                "answer": "Personally Identifiable Information. It refers to any data that could potentially identify a specific individual (e.g., name, social security number, email)."
+            },
+            {
+                "question": "What is Confirmation Bias?",
+                "answer": "The tendency to search for, interpret, favor, and recall information in a way that confirms or supports one's prior beliefs or values."
+            },
+            {
+                "question": "How does data anonymization protect privacy?",
+                "answer": "By stripping personally identifiable information from datasets, making it extremely difficult or impossible to trace the data back to an individual."
+            },
+            {
+                "question": "What is the function of the Interquartile Range (IQR) in a box plot?",
+                "answer": "The IQR represents the middle 50% of the dataset, calculated as the difference between the 75th percentile (Q3) and the 25th percentile (Q1), showing the spread of the bulk of the data."
+            },
+            {
+                "question": "What is Deontological Ethics?",
+                "answer": "An ethical framework focusing on rules, duties, and obligations, arguing that an action is inherently right or wrong regardless of its consequences."
+            },
+            {
+                "question": "In Excel, what does conditional formatting do?",
+                "answer": "It changes the visual appearance of cells based on specific conditions or rules, allowing users to quickly spot trends, outliers, or specific data points."
+            },
+            {
+                "question": "What is an outlier in a dataset?",
+                "answer": "A data point that differs significantly from other observations, which may indicate variability in the measurement or an experimental error."
+            },
+            {
+                "question": "What is Egocentrism in the context of critical thinking?",
+                "answer": "The natural human tendency to view everything in relation to oneself, assuming that one's own beliefs and perspectives are the default truth."
+            },
+            {
+                "question": "What is Sociocentrism?",
+                "answer": "The assumption that one's own social group, culture, or society is superior to others, often leading to uncritical acceptance of group norms and beliefs."
+            },
+            {
+                "question": "What does a line chart typically illustrate?",
+                "answer": "A line chart is generally used to display quantitative values over a continuous interval or time period, making it ideal for showing trends over time."
+            },
+            {
+                "question": "What is the difference between structured and unstructured data?",
+                "answer": "Structured data is highly organized (like rows and columns in a database), while unstructured data lacks a pre-defined model (like text documents, audio, or video)."
+            },
+            {
+                "question": "What is a spurious correlation?",
+                "answer": "A mathematical relationship in which two or more events or variables are associated but not causally related, often due to coincidence or a hidden third factor."
+            },
+            {
+                "question": "What is Algorithmic Bias?",
+                "answer": "Systematic and repeatable errors in a computer system that create unfair outcomes, such as privileging one arbitrary group of users over others."
+            },
+            {
+                "question": "What is the role of an Assumption in an argument?",
+                "answer": "An assumption is an unstated premise or belief that is taken for granted in order to support a conclusion."
+            },
+            {
+                "question": "What is the median of a dataset?",
+                "answer": "The median is the exact middle value of a dataset when it is ordered from least to greatest, separating the higher half from the lower half."
+            },
+            {
+                "question": "What is the mean of a dataset?",
+                "answer": "The mean is the mathematical average, calculated by adding all values together and dividing by the total number of values."
+            },
+            {
+                "question": "What is the mode of a dataset?",
+                "answer": "The mode is the value that appears most frequently in a dataset."
+            },
+            {
+                "question": "What does standard deviation measure?",
+                "answer": "Standard deviation measures the average amount of variability or dispersion in a dataset, showing how far data points typically fall from the mean."
+            },
+            {
+                "question": "What is variance?",
+                "answer": "Variance is the average of the squared differences from the mean, used to quantify the spread of data."
+            },
+            {
+                "question": "What is a normal distribution?",
+                "answer": "A probability distribution that is symmetric about the mean, showing that data near the mean are more frequent in occurrence than data far from the mean (bell curve)."
+            },
+            {
+                "question": "What is a Z-score?",
+                "answer": "A statistical measurement that describes a value's relationship to the mean of a group of values, measured in terms of standard deviations from the mean."
+            },
+            {
+                "question": "What is a Null Hypothesis (H0)?",
+                "answer": "The default assumption in statistical testing that there is no significant difference or relationship between two measured phenomena."
+            },
+            {
+                "question": "What is an Alternative Hypothesis (H1)?",
+                "answer": "The hypothesis that states there is a statistically significant relationship or difference, contradicting the null hypothesis."
+            },
+            {
+                "question": "What is a Type I Error (False Positive)?",
+                "answer": "The error made when a statistical test incorrectly rejects a true null hypothesis (e.g., concluding a medicine works when it actually doesn't)."
+            },
+            {
+                "question": "What is a Type II Error (False Negative)?",
+                "answer": "The error made when a statistical test fails to reject a false null hypothesis (e.g., concluding a medicine doesn't work when it actually does)."
+            },
+            {
+                "question": "What is a P-value?",
+                "answer": "The probability of obtaining test results at least as extreme as the results actually observed, under the assumption that the null hypothesis is true."
+            },
+            {
+                "question": "What is Supervised Machine Learning?",
+                "answer": "A type of machine learning where the algorithm is trained on labeled data, meaning the input data is paired with the correct output or answer."
+            },
+            {
+                "question": "What is Unsupervised Machine Learning?",
+                "answer": "A type of machine learning where the algorithm tries to find hidden patterns or intrinsic structures in unlabeled data without explicit instructions."
+            },
+            {
+                "question": "What is Regression in machine learning?",
+                "answer": "A supervised learning technique used to predict continuous numerical values (e.g., predicting house prices based on square footage)."
+            },
+            {
+                "question": "What is Classification in machine learning?",
+                "answer": "A supervised learning technique used to predict discrete categories or labels (e.g., predicting whether an email is spam or not spam)."
+            },
+            {
+                "question": "What is Clustering?",
+                "answer": "An unsupervised learning technique that groups similar data points together based on their features (e.g., customer segmentation)."
+            },
+            {
+                "question": "What is Overfitting in a machine learning model?",
+                "answer": "When a model learns the training data too well, including its noise and outliers, resulting in poor performance on new, unseen data."
+            },
+            {
+                "question": "What is Underfitting in a machine learning model?",
+                "answer": "When a model is too simple to capture the underlying patterns in the data, resulting in poor performance on both training and test data."
+            },
+            {
+                "question": "Why do we split data into Training and Test sets?",
+                "answer": "To evaluate how well a machine learning model generalizes to new, unseen data, preventing overfitting."
+            },
+            {
+                "question": "What does the VLOOKUP function do in Excel?",
+                "answer": "It searches for a specific value in the first column of a table array and returns a value in the same row from another column."
+            },
+            {
+                "question": "What is an Absolute Reference in Excel?",
+                "answer": "A cell reference (like $A$1) that remains constant and does not change when copied to other cells."
+            },
+            {
+                "question": "What is a Relative Reference in Excel?",
+                "answer": "A cell reference (like A1) that adjusts automatically when copied or pasted to different rows or columns."
+            },
+            {
+                "question": "What is the purpose of Data Validation in Excel?",
+                "answer": "To restrict the type of data or the values that users can enter into a specific cell, reducing data entry errors."
+            },
+            {
+                "question": "What does the COUNTIF function do?",
+                "answer": "It counts the number of cells in a specified range that meet a single specific criterion."
+            },
+            {
+                "question": "What does the SUMIF function do?",
+                "answer": "It adds together all the values in a range of cells that meet one specified criterion."
+            },
+            {
+                "question": "What is the advantage of using XLOOKUP over VLOOKUP?",
+                "answer": "XLOOKUP can search in any direction (left or right), defaults to an exact match, and is generally faster and more flexible than VLOOKUP."
+            },
+            {
+                "question": "What is an Ad Hominem logical fallacy?",
+                "answer": "Attacking the character or personal traits of an opponent instead of addressing the actual substance of their argument."
+            },
+            {
+                "question": "What is a Straw Man fallacy?",
+                "answer": "Misrepresenting or exaggerating someone's argument to make it easier to attack or refute."
+            },
+            {
+                "question": "What is the Slippery Slope fallacy?",
+                "answer": "Arguing that a relatively small first step will inevitably lead to a chain of related events culminating in a significant, usually negative, impact."
+            },
+            {
+                "question": "What is a False Dilemma (Black-or-White) fallacy?",
+                "answer": "Presenting only two alternative states or solutions as the only possibilities, when in fact more possibilities exist."
+            },
+            {
+                "question": "What is the Appeal to Authority fallacy?",
+                "answer": "Claiming that something must be true simply because an authority or expert says it is, without providing actual evidence."
+            },
+            {
+                "question": "What is the Bandwagon fallacy (Ad Populum)?",
+                "answer": "Arguing that a proposition must be true or good simply because many or most people believe it."
+            },
+            {
+                "question": "What is the Anchoring Bias?",
+                "answer": "The human tendency to rely too heavily on the first piece of information offered (the 'anchor') when making decisions."
+            },
+            {
+                "question": "What is the Availability Heuristic?",
+                "answer": "A mental shortcut where people overestimate the likelihood of events based on how easily examples come to mind (e.g., fearing plane crashes more than car crashes)."
+            },
+            {
+                "question": "What is the Dunning-Kruger Effect?",
+                "answer": "A cognitive bias in which people with low ability at a task overestimate their ability, while experts often underestimate their relative competence."
+            },
+            {
+                "question": "What is Survivorship Bias?",
+                "answer": "The logical error of focusing only on the people or things that 'survived' a process and inadvertently overlooking those that did not because of their lack of visibility."
+            },
+            {
+                "question": "What is Hindsight Bias?",
+                "answer": "The tendency to believe, after an event has occurred, that one accurately predicted or expected the outcome ('I knew it all along' phenomenon)."
+            },
+            {
+                "question": "What does GDPR stand for and what is its purpose?",
+                "answer": "General Data Protection Regulation. It is a European Union law that mandates how organizations must protect the personal data and privacy of EU citizens."
+            },
+            {
+                "question": "What is the Right to be Forgotten?",
+                "answer": "A privacy principle (prominent in GDPR) that gives individuals the right to have their personal data erased by organizations under certain circumstances."
+            },
+            {
+                "question": "What is Data Minimization?",
+                "answer": "The ethical and legal principle that organizations should only collect the absolute minimum amount of personal data necessary to achieve their specific purpose."
+            },
+            {
+                "question": "What is Purpose Limitation in data ethics?",
+                "answer": "The rule that personal data must only be collected for specified, explicit, and legitimate purposes and not further processed in a manner incompatible with those purposes."
+            },
+            {
+                "question": "What is Data Encryption?",
+                "answer": "The process of translating plaintext data into an unreadable scrambled format (ciphertext) to prevent unauthorized access."
+            },
+            {
+                "question": "What is Two-Factor Authentication (2FA)?",
+                "answer": "A security system that requires two distinct forms of identification to access an account, usually a password and a code sent to a mobile device."
+            },
+            {
+                "question": "What is Phishing?",
+                "answer": "A cyberattack where scammers disguise themselves as a trustworthy entity in an email or message to trick individuals into revealing sensitive information like passwords."
+            },
+            {
+                "question": "What is a Data Breach?",
+                "answer": "A security incident in which sensitive, protected, or confidential data is copied, transmitted, viewed, or stolen by an unauthorized individual."
+            },
+            {
+                "question": "What is Virtue Ethics?",
+                "answer": "An ethical framework that focuses on the moral character of the person carrying out an action, rather than ethical duties or the consequences of the action."
+            },
+            {
+                "question": "What is the Halo Effect?",
+                "answer": "A cognitive bias in which our overall impression of a person influences how we feel and think about their specific traits (e.g., assuming a conventionally attractive person is also kind)."
+            },
+            {
+                "question": "What is the Sunk Cost Fallacy?",
+                "answer": "The tendency to continue investing time, money, or effort into a losing proposition simply because of the resources already committed to it."
+            },
+            {
+                "question": "What is Web Scraping?",
+                "answer": "The automated process of extracting large amounts of data from websites using software scripts."
+            },
+            {
+                "question": "What is an API (Application Programming Interface)?",
+                "answer": "A set of rules and protocols that allows different software applications to communicate with each other and exchange data securely."
+            },
+            {
+                "question": "What is a Relational Database?",
+                "answer": "A type of database that stores and provides access to data points that are related to one another, organized into tables with rows and columns (e.g., SQL databases)."
+            },
+            {
+                "question": "What is SQL (Structured Query Language)?",
+                "answer": "A standardized programming language used to manage, manipulate, and query data stored in relational databases."
+            },
+            {
+                "question": "What is Big Data?",
+                "answer": "Extremely large, complex datasets that cannot be processed or analyzed using traditional data processing applications."
+            },
+            {
+                "question": "What is a Dashboard in data analytics?",
+                "answer": "A visual interface that provides at-a-glance views of key performance indicators (KPIs) and important data metrics."
+            },
+            {
+                "question": "What is Time Series Analysis?",
+                "answer": "A statistical technique that deals with data ordered by time, used to identify trends, seasonal patterns, and forecast future values."
+            },
+            {
+                "question": "What is A/B Testing?",
+                "answer": "A randomized experiment comparing two versions of a variable (A and B) to determine which performs better in a controlled environment."
+            },
+            {
+                "question": "What is Natural Language Processing (NLP)?",
+                "answer": "A branch of artificial intelligence that helps computers understand, interpret, and manipulate human language."
+            },
+            {
+                "question": "What is a Decision Tree?",
+                "answer": "A flowchart-like machine learning model used for classification and regression that splits data based on answering a series of boolean questions."
+            },
+            {
+                "question": "What is Deep Learning?",
+                "answer": "A subset of machine learning based on artificial neural networks with multiple layers, capable of learning unstructured data like images and audio."
+            },
+            {
+                "question": "What is the placebo effect in experiments?",
+                "answer": "A psychological phenomenon where subjects experience a perceived improvement in their condition simply because they believe they are receiving treatment."
+            },
+            {
+                "question": "What is a Confounding Variable?",
+                "answer": "An unmeasured third variable that influences both the supposed cause and the supposed effect, creating a spurious association."
+            },
+            {
+                "question": "What is Cross-Validation?",
+                "answer": "A technique used in machine learning to assess how the results of a statistical analysis will generalize to an independent dataset by partitioning the data into subsets."
+            },
+            {
+                "question": "What is Predictive Analytics?",
+                "answer": "The use of data, statistical algorithms, and machine learning techniques to identify the likelihood of future outcomes based on historical data."
+            },
+            {
+                "question": "What is Prescriptive Analytics?",
+                "answer": "A type of data analytics that goes beyond predicting future outcomes by suggesting actions you can take to benefit from those predictions."
+            },
+            {
+                "question": "What is Descriptive Analytics?",
+                "answer": "The interpretation of historical data to better understand changes that have occurred in a business (telling you 'what happened')."
+            },
+            {
+                "question": "What is Diagnostic Analytics?",
+                "answer": "A form of advanced analytics that examines data or content to answer the question 'Why did it happen?'"
+            },
+            {
+                "question": "What is the difference between Qualitative and Quantitative data?",
+                "answer": "Quantitative data deals with numbers and things that can be measured objectively, while qualitative data deals with descriptions and characteristics that cannot be easily measured."
+            },
+            {
+                "question": "What is an index in a database context?",
+                "answer": "A data structure that improves the speed of data retrieval operations on a database table at the cost of additional storage space."
+            },
+            {
+                "question": "What is Data Cleansing (or Scrubbing)?",
+                "answer": "The process of detecting and correcting (or removing) corrupt, inaccurate, or incomplete records from a dataset."
+            },
+            {
+                "question": "What is a Heat Map?",
+                "answer": "A data visualization technique that shows magnitude of a phenomenon as color in two dimensions, making it easy to spot clusters or patterns."
+            }
+        ];
+
+        let currentIndex = 0;
+
+        const frontTextEl = document.getElementById('front-text');
+        const backTextEl = document.getElementById('back-text');
+        const flashcardEl = document.getElementById('flashcard');
+        const progressEl = document.getElementById('progress-text');
+
+        function loadCard(index) {
+            frontTextEl.textContent = flashcardsData[index].question;
+            backTextEl.textContent = flashcardsData[index].answer;
+            progressEl.textContent = `Card ${index + 1} of ${flashcardsData.length}`;
+            
+            if (flashcardEl.classList.contains('flipped')) {
+                flashcardEl.classList.remove('flipped');
+            }
+        }
+
+        // Initialize first card
+        loadCard(currentIndex);
+
+        document.getElementById('flashcard-container').addEventListener('click', function() {
+            flashcardEl.classList.toggle('flipped');
+        });
+
+        document.getElementById('next-btn').addEventListener('click', function() {
+            currentIndex = (currentIndex + 1) % flashcardsData.length;
+            if(flashcardEl.classList.contains('flipped')) {
+                flashcardEl.classList.remove('flipped');
+                setTimeout(() => loadCard(currentIndex), 300);
+            } else {
+                loadCard(currentIndex);
+            }
+        });
+
+        document.getElementById('prev-btn').addEventListener('click', function() {
+            currentIndex = (currentIndex - 1 + flashcardsData.length) % flashcardsData.length;
+            if(flashcardEl.classList.contains('flipped')) {
+                flashcardEl.classList.remove('flipped');
+                setTimeout(() => loadCard(currentIndex), 300);
+            } else {
+                loadCard(currentIndex);
+            }
+        });
+    </script>
+</body>
+</html>
